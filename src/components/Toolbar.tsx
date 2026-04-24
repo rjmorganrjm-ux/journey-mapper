@@ -26,6 +26,8 @@ type ToolbarProps = {
   onDeleteTemplate: (id: string) => void;
   onExport: (type: 'png' | 'svg' | 'pdf') => void;
   isExporting: boolean;
+  onToggleCollapse?: () => void;
+  hasSelection?: boolean;
 };
 
 function formatTimeAgo(timestamp: number) {
@@ -60,7 +62,9 @@ export function Toolbar({
   customTemplates,
   onDeleteTemplate,
   onExport,
-  isExporting
+  isExporting,
+  onToggleCollapse,
+  hasSelection
 }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [linkLabel, setLinkLabel] = useState('');
@@ -216,6 +220,20 @@ export function Toolbar({
            <Redo2 className="w-4 h-4" />
         </button>
       </div>
+
+      {hasSelection && (
+        <>
+          <div className="w-px h-6 bg-slate-200 mx-2 hidden sm:block"></div>
+          <button
+            onClick={onToggleCollapse}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full text-xs sm:text-sm font-semibold transition-all shadow-sm border border-indigo-200 animate-in fade-in zoom-in-95 duration-200"
+            title="Toggle Collapse Selected Nodes (M)"
+          >
+            <PlusCircle className="w-4 h-4 rotate-45" /> 
+            <span>Minimize</span>
+          </button>
+        </>
+      )}
 
       <div className="w-px h-6 bg-slate-200 mx-2"></div>
 

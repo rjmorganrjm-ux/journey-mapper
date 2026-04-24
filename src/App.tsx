@@ -517,6 +517,44 @@ function FlowApp() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleDuplicate]);
 
+  const handleBulkToggleCollapse = useCallback(() => {
+    const selectedNodes = nodes.filter(n => n.selected && n.type === 'table');
+    if (selectedNodes.length === 0) return;
+
+    // If any are expanded, collapse them all. If all are collapsed, expand them all.
+    const anyExpanded = selectedNodes.some(n => !n.data.isCollapsed);
+    
+    setNodes(nds => nds.map(node => {
+      if (node.selected && node.type === 'table') {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            isCollapsed: anyExpanded
+          }
+        };
+      }
+      return node;
+    }));
+    
+    takeSnapshot(nodes, edges);
+  }, [nodes, edges, setNodes, takeSnapshot]);
+
+  // Keyboard Shortcuts for Bulk Actions
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable) return;
+
+      if (e.key.toLowerCase() === 'm' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        handleBulkToggleCollapse();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleBulkToggleCollapse]);
+
   // Enrich node data with the template handler
   const enrichedNodes = nodes.map(node => ({
     ...node,
@@ -551,6 +589,8 @@ function FlowApp() {
         onDeleteTemplate={handleDeleteTemplate}
         onExport={handleExport}
         isExporting={isExporting}
+        onToggleCollapse={handleBulkToggleCollapse}
+        hasSelection={nodes.some(n => n.selected && n.type === 'table')}
       />
       <ReactFlow
         nodes={enrichedNodes}
