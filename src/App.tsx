@@ -461,6 +461,62 @@ function FlowApp() {
     });
   }, []);
 
+  const handleDuplicate = useCallback(() => {
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length === 0) return;
+
+    const timestamp = Date.now();
+    const idMap: Record<string, string> = {};
+
+    // Generate new nodes with offset
+    const newNodes = selectedNodes.map(node => {
+      const newId = `node_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
+      idMap[node.id] = newId;
+      return {
+        ...JSON.parse(JSON.stringify(node)),
+        id: newId,
+        position: { x: node.position.x + 40, y: node.position.y + 40 },
+        selected: true,
+      };
+    });
+
+    // Generate new edges if they connect nodes that were both selected
+    const newEdges = edges
+      .filter(edge => idMap[edge.source] && idMap[edge.target])
+      .map(edge => ({
+        ...JSON.parse(JSON.stringify(edge)),
+        id: `edge_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+        source: idMap[edge.source],
+        target: idMap[edge.target],
+        selected: true,
+      }));
+
+    // Deselect old ones and add new ones
+    setNodes(nds => nds.map(n => ({ ...n, selected: false })).concat(newNodes));
+    setEdges(eds => eds.map(e => ({ ...e, selected: false })).concat(newEdges));
+    
+    // Auto-save to history
+    setTimeout(() => {
+      takeSnapshot(nodes, edges);
+    }, 50);
+  }, [nodes, edges, setNodes, setEdges, takeSnapshot]);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Don't duplicate if typing in an input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+        e.preventDefault();
+        handleDuplicate();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleDuplicate]);
+
   // Enrich node data with the template handler
   const enrichedNodes = nodes.map(node => ({
     ...node,
