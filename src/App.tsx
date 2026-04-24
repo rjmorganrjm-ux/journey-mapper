@@ -491,9 +491,10 @@ function FlowApp() {
           markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
           style: { stroke: '#94a3b8', strokeWidth: 2 }
         }}
-        snapToGrid={true}
         snapGrid={[15, 15]}
         fitView
+        minZoom={0.05}
+        maxZoom={2}
       >
         <Background gap={15} size={1} color="#cbd5e1" />
         <Controls showInteractive={false} className="bg-white shadow-lg border border-slate-200 rounded-lg p-1" />
