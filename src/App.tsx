@@ -15,7 +15,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { toPng, toSvg } from 'html-to-image';
+import { toPng, toSvg, toJpeg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { TableNode } from './nodes/TableNode';
 import { NoteNode } from './nodes/NoteNode';
@@ -272,7 +272,7 @@ function FlowApp() {
           const isControls = node.classList?.contains('react-flow__controls');
           return !isHandle && !isResizer && !isControls;
         },
-        pixelRatio: type === 'png' ? 3 : 2, // Extra high res for PNG
+        pixelRatio: type === 'png' ? 2 : 1.5, // Standardized scaling to prevent massive files
       };
 
       const safeName = journeyName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -291,13 +291,14 @@ function FlowApp() {
         link.href = dataUrl;
         link.click();
       } else if (type === 'pdf') {
-        const dataUrl = await toPng(el, { ...options, pixelRatio: 2 });
+        const dataUrl = await toJpeg(el, { ...options, pixelRatio: 1.5, quality: 0.95 });
         const pdf = new jsPDF({
           orientation: exportWidth > exportHeight ? 'l' : 'p',
           unit: 'px',
           format: [exportWidth, exportHeight],
+          compress: true,
         });
-        pdf.addImage(dataUrl, 'PNG', 0, 0, exportWidth, exportHeight);
+        pdf.addImage(dataUrl, 'JPEG', 0, 0, exportWidth, exportHeight, undefined, 'FAST');
         pdf.save(`${safeName}-${dateStr}.pdf`);
       }
     } catch (err) {
