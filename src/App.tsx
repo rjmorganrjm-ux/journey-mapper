@@ -22,6 +22,7 @@ import { NoteNode } from './nodes/NoteNode';
 import { CustomEdge } from './edges/CustomEdge';
 import { Toolbar } from './components/Toolbar';
 import { useHistory } from './hooks/useHistory';
+import { NODE_TEMPLATES } from './utils/nodeTemplates';
 
 const PERSISTENCE_KEY = 'journey_mapper_state';
 const RECENTS_KEY = 'journey_mapper_recents';
@@ -284,9 +285,7 @@ function FlowApp() {
 
   const handleAddNode = useCallback((templateType: string = 'blank', customData?: any) => {
     const id = `node_${Date.now()}`;
-    const colors = ['bg-indigo-600', 'bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-rose-600', 'bg-slate-800'];
-    let color = colors[nodes.length % colors.length];
-
+    
     if (templateType === 'custom' && customData) {
       const newNode: Node = {
         id,
@@ -310,92 +309,22 @@ function FlowApp() {
       return;
     }
 
-    let title = 'New Step';
+    const template = NODE_TEMPLATES[templateType];
+    
+    let title = template?.title || 'New Step';
+    let category = template?.label || '';
+    let color = template?.color || 'bg-blue-600';
     let columns = [
       { id: 'c_metric', name: 'Metric', isStat: false },
       { id: 'c_tool', name: 'Tool', isStat: false },
       { id: 'c_past', name: 'Past', isStat: true },
       { id: 'c_curr', name: 'Current', isStat: true },
     ];
-    let rows = [
+    let rows = template?.rows ? JSON.parse(JSON.stringify(template.rows)) : [
       { id: 'r1', c_metric: '', c_tool: '', c_past: '', c_curr: '' },
       { id: 'r2', c_metric: '', c_tool: '', c_past: '', c_curr: '' },
       { id: 'r3', c_metric: '', c_tool: '', c_past: '', c_curr: '' },
     ];
-
-    if (templateType === 'organic_search') {
-      title = 'Organic Search';
-      color = 'bg-emerald-600';
-      rows = [
-        { id: 'r1', c_metric: 'Avg. Position', c_tool: 'Search Console', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'CTR', c_tool: 'Search Console', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Clicks', c_tool: 'Search Console', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'Impressions', c_tool: 'Search Console', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'landing_page') {
-      title = 'Landing Page';
-      color = 'bg-blue-600';
-      rows = [
-        { id: 'r1', c_metric: 'Bounce Rate', c_tool: 'Google Analytics', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'CTA Clicks', c_tool: 'Google Analytics', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Avg. Scroll Depth', c_tool: 'Google Analytics', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'paid_social') {
-      title = 'Paid Social Ad';
-      color = 'bg-purple-600';
-      rows = [
-        { id: 'r1', c_metric: 'Spend', c_tool: 'Facebook Ads', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'Impressions', c_tool: 'Facebook Ads', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'CPC', c_tool: 'Facebook Ads', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'Conversions', c_tool: 'Facebook Ads', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'email_campaign') {
-      title = 'Email Campaign';
-      color = 'bg-indigo-600';
-      rows = [
-        { id: 'r1', c_metric: 'Open Rate', c_tool: 'Klaviyo', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'Click Rate', c_tool: 'Klaviyo', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Unsubscribes', c_tool: 'Klaviyo', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'Conversions', c_tool: 'Klaviyo', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'ecommerce_checkout') {
-      title = 'Checkout';
-      color = 'bg-rose-600';
-      rows = [
-        { id: 'r1', c_metric: 'Add to Cart', c_tool: 'Shopify', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'Abandonment Rate', c_tool: 'Shopify', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Purchases', c_tool: 'Shopify', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'Revenue', c_tool: 'Shopify', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'gated_content') {
-      title = 'Gated Content LP';
-      color = 'bg-slate-800';
-      rows = [
-        { id: 'r1', c_metric: 'Views', c_tool: 'Google Analytics', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'Signups', c_tool: 'HubSpot', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Conversion Rate', c_tool: 'HubSpot', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'MQLs', c_tool: 'HubSpot', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'product_page') {
-      title = 'Product Page';
-      color = 'bg-blue-800';
-      rows = [
-        { id: 'r1', c_metric: 'Page Views', c_tool: 'Google Analytics', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'Add to Cart', c_tool: 'Shopify', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Buy Now Clicks', c_tool: 'Shopify', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'Bounce Rate', c_tool: 'Google Analytics', c_past: '', c_curr: '' },
-      ];
-    } else if (templateType === 'paid_search') {
-      title = 'Paid Search Ads';
-      color = 'bg-amber-600';
-      rows = [
-        { id: 'r1', c_metric: 'Spend', c_tool: 'Google Ads', c_past: '', c_curr: '' },
-        { id: 'r2', c_metric: 'Impressions', c_tool: 'Google Ads', c_past: '', c_curr: '' },
-        { id: 'r3', c_metric: 'Clicks', c_tool: 'Google Ads', c_past: '', c_curr: '' },
-        { id: 'r4', c_metric: 'CPC', c_tool: 'Google Ads', c_past: '', c_curr: '' },
-        { id: 'r5', c_metric: 'Conversions', c_tool: 'Google Ads', c_past: '', c_curr: '' },
-      ];
-    }
 
     const newNode: Node = {
       id,
@@ -403,13 +332,14 @@ function FlowApp() {
       position: { x: Math.random() * 200 + window.innerWidth / 2 - 200, y: Math.random() * 200 + window.innerHeight / 2 - 200 },
       data: {
         title,
+        category,
         color,
         columns,
         rows
       },
     };
     setNodes((nds) => [...nds, newNode]);
-  }, [setNodes, nodes.length]);
+  }, [setNodes]);
 
   const handleAddQuickLink = useCallback((label: string, url: string) => {
     setQuickLinks(prev => [...prev, { label, url }]);

@@ -2,6 +2,7 @@ import { Handle, Position, useReactFlow, NodeResizer } from '@xyflow/react';
 import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { Plus, X, ChevronDown, ExternalLink, Copy, Star, Calendar } from 'lucide-react';
 import { formatManualRange } from '../utils/dateUtils';
+import { NODE_TEMPLATES } from '../utils/nodeTemplates';
 
 export const METRIC_OPTIONS = [
   'Impressions',
@@ -53,6 +54,7 @@ export type RowData = Record<string, string> & { id: string };
 
 export type TableNodeData = {
   title: string;
+  category?: string;
   color?: string;
   url?: string;
   columns: ColumnSchema[];
@@ -121,19 +123,35 @@ function CellSelectOrInput({
 export function TableNode({ id, data, selected }: { id: string, data: TableNodeData, selected: boolean }) {
   const { updateNodeData, getNodes, setNodes } = useReactFlow();
   const [openDatePicker, setOpenDatePicker] = useState<string | null>(null);
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpenDatePicker(null);
       }
+      if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node)) {
+        setIsCategoryMenuOpen(false);
+      }
     };
-    if (openDatePicker) {
+    if (openDatePicker || isCategoryMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openDatePicker]);
+  }, [openDatePicker, isCategoryMenuOpen]);
+
+  const applyTemplate = useCallback((templateType: string) => {
+    const template = NODE_TEMPLATES[templateType];
+    if (!template) return;
+
+    updateNodeData(id, {
+      category: template.label,
+      color: template.color
+    });
+    setIsCategoryMenuOpen(false);
+  }, [id, updateNodeData]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -282,14 +300,47 @@ export function TableNode({ id, data, selected }: { id: string, data: TableNodeD
       </div>
 
       {/* Header */}
-      <div className={`p-4 pb-3 ${headerColor} flex flex-col gap-2 transition-colors rounded-t-xl`}>
-        <input
-          value={data.title}
-          onChange={handleTitleChange}
-          className="bg-transparent text-white font-bold text-center border-none outline-none focus:ring-2 focus:ring-white/50 rounded-md px-2 py-1 w-full text-base placeholder:text-white/60 focus:bg-black/10"
-          placeholder="Step / Node Title..."
-        />
-        <div className="flex gap-1 items-center bg-black/10 rounded-md p-1 pl-2 focus-within:bg-black/20 focus-within:ring-2 focus-within:ring-white/50 transition-all border border-transparent focus-within:border-white/20">
+      <div className={`${headerColor} p-4 pb-3 flex flex-col gap-2 transition-all duration-500 rounded-t-xl relative`}>
+        <div className="relative flex items-center gap-1 group/header" ref={categoryMenuRef}>
+          <div className="flex-1 flex flex-col min-w-0">
+            {data.category && (
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 mb-0.5">
+                {data.category}
+              </span>
+            )}
+            <input
+              value={data.title}
+              onChange={handleTitleChange}
+              className="bg-transparent text-white font-bold text-lg border-none outline-none focus:ring-2 focus:ring-white/30 rounded px-1 -ml-1 w-full placeholder:text-white/50 transition-all hover:bg-white/10"
+              placeholder="Step Name..."
+            />
+          </div>
+          <button 
+            onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
+            className="p-1 hover:bg-white/20 rounded transition-colors text-white/70 hover:text-white self-start mt-1"
+            title="Switch Node Category"
+          >
+            <ChevronDown className={`w-5 h-5 transition-transform ${isCategoryMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isCategoryMenuOpen && (
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white shadow-2xl border border-slate-200 rounded-xl z-50 py-2 flex flex-col text-slate-700 shadow-indigo-500/10 backdrop-blur-xl animate-in fade-in zoom-in-95">
+              <div className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">Switch Category</div>
+              {Object.values(NODE_TEMPLATES).map((tpl) => (
+                <button
+                  key={tpl.id}
+                  onClick={() => applyTemplate(tpl.id)}
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors group/item text-left"
+                >
+                  <div className={`w-3 h-3 rounded-full ${tpl.color} shadow-sm group-hover/item:scale-125 transition-transform`}></div>
+                  <span className="text-sm font-medium">{tpl.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-1 items-center bg-black/10 rounded-md p-1 pl-2 focus-within:bg-black/20 focus-within:ring-2 focus-within:ring-white/50 transition-all border border-white/5 group/url">
           <input
             value={data.url || ''}
             onChange={handleUrlChange}
