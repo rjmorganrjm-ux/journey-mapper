@@ -16,7 +16,7 @@ export function AddStepMenu({ onAddNode, customTemplates, onDeleteTemplate, clas
   };
 
   return (
-    <div className={`bg-white shadow-2xl border border-slate-200 flex flex-col overflow-hidden divide-y divide-slate-100 rounded-xl whitespace-normal ${className}`}>
+    <div className={`bg-white shadow-2xl border border-slate-200 flex flex-col overflow-y-auto overflow-x-hidden max-h-[80vh] divide-y divide-slate-100 rounded-xl whitespace-normal ${className}`}>
       <button onClick={() => handleAdd('blank')} className="text-left px-4 py-3 hover:bg-slate-50 text-sm font-medium text-slate-700 transition-colors">Blank Node</button>
       <button onClick={() => handleAdd('sticky_note')} className="text-left px-4 py-3 hover:bg-yellow-50 text-sm font-semibold text-yellow-700 transition-colors flex items-center gap-2">
         <StickyNote className="w-3.5 h-3.5" />

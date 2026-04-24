@@ -24,6 +24,7 @@ import { CustomEdge } from './edges/CustomEdge';
 import { Toolbar } from './components/Toolbar';
 import { AddStepMenu } from './components/AddStepMenu';
 import { useHistory } from './hooks/useHistory';
+import { Plus } from 'lucide-react';
 import { NODE_TEMPLATES } from './utils/nodeTemplates';
 
 const PERSISTENCE_KEY = 'journey_mapper_state';
@@ -527,7 +528,8 @@ function FlowApp() {
               position: 'absolute', 
               top: contextMenu.clientY, 
               left: contextMenu.clientX, 
-              zIndex: 1000 
+              zIndex: 1000,
+              transform: 'translate(-50%, -50%)' // Center around tap/click point instead of hanging off right
             }}
             className="w-64 animate-in fade-in zoom-in-95 duration-200"
             onContextMenu={(e) => e.preventDefault()}
@@ -537,10 +539,21 @@ function FlowApp() {
               customTemplates={customTemplates} 
               onDeleteTemplate={handleDeleteTemplate}
               onMenuItemClick={() => setContextMenu(null)}
+              className="shadow-2xl border-slate-300 ring-2 ring-indigo-500/20"
             />
           </div>
         )}
       </ReactFlow>
+
+      {/* Mobile-only Floating Action Button for Adding Nodes */}
+      <button 
+        className="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 z-50 hover:bg-indigo-700 active:scale-95 transition-all"
+        onClick={() => {
+          setContextMenu(contextMenu ? null : { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+        }}
+      >
+        <Plus className={`w-8 h-8 transition-transform duration-300 ${contextMenu ? 'rotate-45' : ''}`} />
+      </button>
     </div>
   );
 }
