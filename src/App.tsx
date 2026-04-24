@@ -21,6 +21,7 @@ import { TableNode } from './nodes/TableNode';
 import { NoteNode } from './nodes/NoteNode';
 import { CustomEdge } from './edges/CustomEdge';
 import { Toolbar } from './components/Toolbar';
+import { AddStepMenu } from './components/AddStepMenu';
 import { useHistory } from './hooks/useHistory';
 import { NODE_TEMPLATES } from './utils/nodeTemplates';
 
@@ -132,7 +133,9 @@ function FlowApp() {
   
   const isRestoring = useRef(false);
   const { takeSnapshot, undo, redo, forceClear, canUndo, canRedo } = useHistory(nodes, edges);
-  const { fitView } = useReactFlow();
+  const { fitView, screenToFlowPosition } = useReactFlow();
+  
+  const [contextMenu, setContextMenu] = useState<{ clientX: number, clientY: number } | null>(null);
 
   const handleUndo = useCallback(() => {
     const prevState = undo(nodes, edges);
@@ -309,14 +312,22 @@ function FlowApp() {
     }
   }, [nodes, journeyName, fitView]);
 
-  const handleAddNode = useCallback((templateType: string = 'blank', customData?: any) => {
+  const handleAddNode = useCallback((templateType: string = 'blank', customData?: any, screenPos?: { clientX: number, clientY: number }) => {
     const id = `node_${Date.now()}`;
     
+    // Determine spawn position
+    let position = { x: Math.random() * 200 + window.innerWidth / 2 - 200, y: Math.random() * 200 + window.innerHeight / 2 - 200 };
+    if (screenPos) {
+      position = screenToFlowPosition({ x: screenPos.clientX, y: screenPos.clientY });
+    } else if (templateType === 'sticky_note') {
+      position = { x: Math.random() * 200 + window.innerWidth / 2 - 100, y: Math.random() * 200 + window.innerHeight / 2 - 100 };
+    }
+
     if (templateType === 'custom' && customData) {
       const newNode: Node = {
         id,
         type: 'table',
-        position: { x: Math.random() * 200 + window.innerWidth / 2 - 200, y: Math.random() * 200 + window.innerHeight / 2 - 200 },
+        position,
         data: { ...customData },
       };
       setNodes((nds) => [...nds, newNode]);
@@ -327,7 +338,7 @@ function FlowApp() {
       const newNode: Node = {
         id,
         type: 'note',
-        position: { x: Math.random() * 200 + window.innerWidth / 2 - 100, y: Math.random() * 200 + window.innerHeight / 2 - 100 },
+        position,
         data: { content: '' },
         style: { width: 200, height: 200 }
       };
@@ -355,7 +366,7 @@ function FlowApp() {
     const newNode: Node = {
       id,
       type: 'table',
-      position: { x: Math.random() * 200 + window.innerWidth / 2 - 200, y: Math.random() * 200 + window.innerHeight / 2 - 200 },
+      position,
       data: {
         title,
         category,
@@ -365,7 +376,7 @@ function FlowApp() {
       },
     };
     setNodes((nds) => [...nds, newNode]);
-  }, [setNodes]);
+  }, [setNodes, screenToFlowPosition]);
 
   const handleAddQuickLink = useCallback((label: string, url: string) => {
     setQuickLinks(prev => [...prev, { label, url }]);
@@ -491,13 +502,41 @@ function FlowApp() {
           markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
           style: { stroke: '#94a3b8', strokeWidth: 2 }
         }}
+        onPaneClick={() => setContextMenu(null)}
+        onNodeClick={() => setContextMenu(null)}
         snapGrid={[15, 15]}
         fitView
         minZoom={0.05}
         maxZoom={2}
+        panOnDrag={[0, 1, 2]} // 0=left, 1=middle, 2=right
+        onPaneContextMenu={(e) => {
+          e.preventDefault();
+          setContextMenu({ clientX: e.clientX, clientY: e.clientY });
+        }}
       >
         <Background gap={15} size={1} color="#cbd5e1" />
         <Controls showInteractive={false} className="bg-white shadow-lg border border-slate-200 rounded-lg p-1" />
+        
+        {/* Context Menu Overlay */}
+        {contextMenu && (
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: contextMenu.clientY, 
+              left: contextMenu.clientX, 
+              zIndex: 1000 
+            }}
+            className="w-64 animate-in fade-in zoom-in-95 duration-200"
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <AddStepMenu 
+              onAddNode={(type, data) => handleAddNode(type, data, contextMenu)} 
+              customTemplates={customTemplates} 
+              onDeleteTemplate={handleDeleteTemplate}
+              onMenuItemClick={() => setContextMenu(null)}
+            />
+          </div>
+        )}
       </ReactFlow>
     </div>
   );
