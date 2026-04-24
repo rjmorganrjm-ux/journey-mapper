@@ -248,21 +248,22 @@ function FlowApp() {
 
     setIsExporting(true);
     try {
-      // 1. Fit view first to encompass all nodes
-      await fitView({ padding: 0.1 });
+      const nodesBounds = getNodesBounds(nodes);
       
-      // 2. Wait for fitView to settle and for fonts/images to be ready
-      await new Promise(r => setTimeout(r, 600));
+      // Add padding around the exported image
+      const PADDING = 50;
+      const exportWidth = nodesBounds.width + PADDING * 2;
+      const exportHeight = nodesBounds.height + PADDING * 2;
 
-      const bounds = getNodesBounds(nodes);
-      
-      // Options to hide UI elements during export
+      // Options to hide UI elements and force full size
       const options = {
         backgroundColor: '#f8fafc',
+        width: exportWidth,
+        height: exportHeight,
         style: {
-          width: bounds.width + 'px',
-          height: bounds.height + 'px',
-          transform: `translate(${-bounds.x}px, ${-bounds.y}px) scale(1)`,
+          width: `${exportWidth}px`,
+          height: `${exportHeight}px`,
+          transform: `translate(${-nodesBounds.x + PADDING}px, ${-nodesBounds.y + PADDING}px) scale(1)`,
         },
         filter: (node: HTMLElement) => {
           // Hide handles, controls, and other UI noise
@@ -292,11 +293,11 @@ function FlowApp() {
       } else if (type === 'pdf') {
         const dataUrl = await toPng(el, { ...options, pixelRatio: 2 });
         const pdf = new jsPDF({
-          orientation: bounds.width > bounds.height ? 'l' : 'p',
+          orientation: exportWidth > exportHeight ? 'l' : 'p',
           unit: 'px',
-          format: [bounds.width + 100, bounds.height + 100],
+          format: [exportWidth, exportHeight],
         });
-        pdf.addImage(dataUrl, 'PNG', 50, 50, bounds.width, bounds.height);
+        pdf.addImage(dataUrl, 'PNG', 0, 0, exportWidth, exportHeight);
         pdf.save(`${safeName}-${dateStr}.pdf`);
       }
     } catch (err) {
