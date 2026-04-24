@@ -15,7 +15,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { toPng } from 'html-to-image';
+import { toPng, toSvg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { TableNode } from './nodes/TableNode';
 import { NoteNode } from './nodes/NoteNode';
@@ -242,42 +242,66 @@ function FlowApp() {
     setCustomTemplates(prev => prev.filter(t => t.id !== tplId));
   }, []);
 
-  const handleExportPDF = useCallback(async () => {
+  const handleExport = useCallback(async (type: 'png' | 'svg' | 'pdf') => {
     const el = document.querySelector('.react-flow__viewport') as HTMLElement;
     if (!el) return;
 
     setIsExporting(true);
     try {
-      // Fit view first to encompass all nodes
+      // 1. Fit view first to encompass all nodes
       await fitView({ padding: 0.1 });
       
-      // Wait for fitView to settle
-      await new Promise(r => setTimeout(r, 400));
+      // 2. Wait for fitView to settle and for fonts/images to be ready
+      await new Promise(r => setTimeout(r, 600));
 
       const bounds = getNodesBounds(nodes);
       
-      const dataUrl = await toPng(el, {
-        backgroundColor: '#f8fafc', // match slate-50
+      // Options to hide UI elements during export
+      const options = {
+        backgroundColor: '#f8fafc',
         style: {
           width: bounds.width + 'px',
           height: bounds.height + 'px',
           transform: `translate(${-bounds.x}px, ${-bounds.y}px) scale(1)`,
         },
-        pixelRatio: 2, // High res
-      });
+        filter: (node: HTMLElement) => {
+          // Hide handles, controls, and other UI noise
+          const isHandle = node.classList?.contains('react-flow__handle');
+          const isResizer = node.classList?.contains('react-flow__node-resizer');
+          const isControls = node.classList?.contains('react-flow__controls');
+          return !isHandle && !isResizer && !isControls;
+        },
+        pixelRatio: type === 'png' ? 3 : 2, // Extra high res for PNG
+      };
 
-      const pdf = new jsPDF({
-        orientation: bounds.width > bounds.height ? 'l' : 'p',
-        unit: 'px',
-        format: [bounds.width + 100, bounds.height + 100],
-      });
-
-      pdf.addImage(dataUrl, 'PNG', 50, 50, bounds.width, bounds.height);
       const safeName = journeyName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      pdf.save(`${safeName}-${new Date().toISOString().slice(0, 10)}.pdf`);
+      const dateStr = new Date().toISOString().slice(0, 10);
+
+      if (type === 'svg') {
+        const dataUrl = await toSvg(el, options);
+        const link = document.createElement('a');
+        link.download = `${safeName}-${dateStr}.svg`;
+        link.href = dataUrl;
+        link.click();
+      } else if (type === 'png') {
+        const dataUrl = await toPng(el, options);
+        const link = document.createElement('a');
+        link.download = `${safeName}-${dateStr}.png`;
+        link.href = dataUrl;
+        link.click();
+      } else if (type === 'pdf') {
+        const dataUrl = await toPng(el, { ...options, pixelRatio: 2 });
+        const pdf = new jsPDF({
+          orientation: bounds.width > bounds.height ? 'l' : 'p',
+          unit: 'px',
+          format: [bounds.width + 100, bounds.height + 100],
+        });
+        pdf.addImage(dataUrl, 'PNG', 50, 50, bounds.width, bounds.height);
+        pdf.save(`${safeName}-${dateStr}.pdf`);
+      }
     } catch (err) {
-      console.error('Failed to export PDF', err);
-      alert('Could not generate PDF. Please try again.');
+      console.error(`Failed to export ${type}`, err);
+      alert(`Could not generate ${type.toUpperCase()}. Please try again.`);
     } finally {
       setIsExporting(false);
     }
@@ -449,7 +473,7 @@ function FlowApp() {
         onNewJourney={handleNewJourney}
         customTemplates={customTemplates}
         onDeleteTemplate={handleDeleteTemplate}
-        onExportPDF={handleExportPDF}
+        onExport={handleExport}
         isExporting={isExporting}
       />
       <ReactFlow

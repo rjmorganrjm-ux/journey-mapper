@@ -23,7 +23,7 @@ type ToolbarProps = {
   onNewJourney: () => void;
   customTemplates: CustomTemplate[];
   onDeleteTemplate: (id: string) => void;
-  onExportPDF: () => void;
+  onExport: (type: 'png' | 'svg' | 'pdf') => void;
   isExporting: boolean;
 };
 
@@ -58,7 +58,7 @@ export function Toolbar({
   onNewJourney,
   customTemplates,
   onDeleteTemplate,
-  onExportPDF,
+  onExport,
   isExporting
 }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -265,15 +265,60 @@ export function Toolbar({
           <span className="hidden sm:inline">Save</span>
         </button>
 
-        <button
-          onClick={onExportPDF}
-          disabled={isExporting}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${isExporting ? 'bg-slate-100 text-slate-400' : 'hover:bg-indigo-50 text-indigo-600'}`}
-          title="Export as PDF Document"
-        >
-          {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-          <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'PDF'}</span>
-        </button>
+        {/* Export Dropdown */}
+        <div className="relative group/export ml-1">
+          <button
+            disabled={isExporting}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${isExporting ? 'bg-slate-100 text-slate-400' : 'hover:bg-indigo-50 text-indigo-600 border border-transparent hover:border-indigo-100'}`}
+          >
+            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
+            <ChevronDown className="w-3 h-3 opacity-50" />
+          </button>
+
+          <div className="absolute top-full right-0 w-56 bg-white shadow-2xl border border-slate-200 opacity-0 invisible group-hover/export:opacity-100 group-hover/export:visible transition-all flex flex-col rounded-xl -mt-2 z-20 pb-1 ring-1 ring-black/5 overflow-hidden">
+            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Download Map as...</div>
+            
+            <button 
+              onClick={() => onExport('png')}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left group/item"
+            >
+              <div className="w-8 h-8 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover/item:bg-emerald-600 group-hover/item:text-white transition-colors">
+                <FileDown className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-700">High-Res PNG</span>
+                <span className="text-[10px] text-slate-400">Best for presentations</span>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => onExport('svg')}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left group/item border-t border-slate-50"
+            >
+              <div className="w-8 h-8 rounded bg-amber-50 text-amber-600 flex items-center justify-center group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors">
+                <FileDown className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-700">Scalable SVG</span>
+                <span className="text-[10px] text-slate-400">Infinity zoom / Vectors</span>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => onExport('pdf')}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left group/item border-t border-slate-50"
+            >
+              <div className="w-8 h-8 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover/item:bg-indigo-600 group-hover/item:text-white transition-colors">
+                <FileDown className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-700">PDF Document</span>
+                <span className="text-[10px] text-slate-400">Standard for sharing</span>
+              </div>
+            </button>
+          </div>
+        </div>
 
         {/* Load Dropdown */}
         <div className="relative group/load ml-2">
