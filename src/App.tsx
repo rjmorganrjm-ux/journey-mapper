@@ -13,6 +13,7 @@ import {
   MarkerType,
   getNodesBounds,
   useReactFlow,
+  SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { toPng, toSvg, toJpeg } from 'html-to-image';
@@ -508,7 +509,9 @@ function FlowApp() {
         fitView
         minZoom={0.05}
         maxZoom={2}
-        panOnDrag={[0, 1, 2]} // 0=left, 1=middle, 2=right
+        panOnDrag={[1, 2]} // 1=middle, 2=right
+        selectionOnDrag={true} // Left-click drag to select
+        selectionMode={SelectionMode.Partial} // Miro-style: select if box touches node
         onPaneContextMenu={(e) => {
           e.preventDefault();
           setContextMenu({ clientX: e.clientX, clientY: e.clientY });
