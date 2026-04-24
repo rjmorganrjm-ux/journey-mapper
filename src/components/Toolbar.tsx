@@ -99,7 +99,7 @@ export function Toolbar({
   };
 
   return (
-    <div className="absolute top-[2%] sm:top-6 left-1/2 -translate-x-1/2 z-10 bg-white/90 sm:bg-white/80 backdrop-blur-md shadow-xl rounded-[2rem] sm:rounded-full flex items-center p-2 sm:p-3 px-4 sm:px-12 border border-slate-200/50 gap-3 sm:gap-6 whitespace-nowrap max-w-[95vw] pointer-events-auto">
+    <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 z-10 bg-white/95 sm:bg-white/80 backdrop-blur-md shadow-2xl rounded-2xl sm:rounded-full flex flex-wrap sm:flex-nowrap items-center p-2 sm:p-3 px-4 sm:px-12 border border-slate-200/50 gap-2 sm:gap-6 max-w-[95vw] pointer-events-auto transition-all justify-center">
       {/* Journey Name */}
       <div className="flex items-center gap-3 mr-4">
         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200">
@@ -116,7 +116,7 @@ export function Toolbar({
         </div>
       </div>
 
-      <div className="w-px h-8 bg-slate-200 mx-1"></div>
+      <div className="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
 
       {/* Add Step Dropdown */}
       <div className="relative group/add">
@@ -199,7 +199,7 @@ export function Toolbar({
         </div>
       </div>
 
-      <div className="w-px h-6 bg-slate-200 mx-2"></div>
+      <div className="w-px h-6 bg-slate-200 mx-2 hidden sm:block"></div>
 
       {/* Undo/Redo */}
       <div className="flex bg-slate-100 rounded-full border border-slate-200 p-0.5 relative">
@@ -235,7 +235,7 @@ export function Toolbar({
         </>
       )}
 
-      <div className="w-px h-6 bg-slate-200 mx-2"></div>
+      <div className="w-px h-6 bg-slate-200 mx-2 hidden sm:block"></div>
 
       {/* Save/Export */}
       <div className="flex items-center gap-1">
