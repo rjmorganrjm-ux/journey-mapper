@@ -1,4 +1,4 @@
-import { Save, Upload, Plus, ChevronDown, Undo2, Redo2, Link, Trash2, ExternalLink, StickyNote, Edit3, Clock, PlusCircle, Star, X, FileDown, Loader2 } from 'lucide-react';
+import { Save, Upload, Plus, ChevronDown, Undo2, Redo2, Link, Trash2, ExternalLink, Edit3, Clock, PlusCircle, X, FileDown, Loader2 } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { RecentJourney, CustomTemplate } from '../App';
 import { AddStepMenu } from './AddStepMenu';
