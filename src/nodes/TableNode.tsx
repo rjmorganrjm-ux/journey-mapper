@@ -379,55 +379,13 @@ export function TableNode({ id, data, selected }: { id: string, data: TableNodeD
                     <th key={col.id} className="p-3 font-semibold relative group/th bg-slate-50">
                       <div className="flex items-center gap-1">
                         {col.isStat && (
-                           <div className="relative">
-                              <button
-                                onClick={() => setOpenDatePicker(col.id)}
-                                className="p-1 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-all"
-                                title="Set Date Range"
-                              >
-                                <Calendar className="w-3 h-3" />
-                              </button>
-                              
-                              {openDatePicker === col.id && (
-                                <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-52 bg-white shadow-2xl border border-slate-200 rounded-xl z-50 py-1 flex flex-col normal-case tracking-normal">
-                                   <div className="p-3 flex flex-col gap-3">
-                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Start Date</label>
-                                        <input 
-                                          type="date" 
-                                          value={manualStart}
-                                          onChange={(e) => setManualStart(e.target.value)}
-                                          className="text-xs p-1.5 bg-slate-50 border border-slate-200 rounded outline-none focus:border-indigo-300 w-full"
-                                        />
-                                     </div>
-                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">End Date</label>
-                                        <input 
-                                          type="date" 
-                                          value={manualEnd}
-                                          onChange={(e) => setManualEnd(e.target.value)}
-                                          className="text-xs p-1.5 bg-slate-50 border border-slate-200 rounded outline-none focus:border-indigo-300 w-full"
-                                        />
-                                     </div>
-                                     <div className="pt-1 flex gap-2">
-                                        <button 
-                                          onClick={() => setOpenDatePicker(null)}
-                                          className="flex-1 text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest py-2 transition-colors"
-                                        >
-                                          Cancel
-                                        </button>
-                                        <button 
-                                          onClick={() => applyManualRange(col.id)}
-                                          disabled={!manualStart || !manualEnd}
-                                          className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-widest py-2 rounded shadow-md shadow-indigo-100 transition-all disabled:opacity-50"
-                                        >
-                                          Apply
-                                        </button>
-                                     </div>
-                                   </div>
-                                </div>
-                              )}
-                           </div>
+                           <button
+                             onClick={() => setOpenDatePicker(col.id)}
+                             className="p-1 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-all"
+                             title="Set Date Range"
+                           >
+                             <Calendar className="w-3 h-3" />
+                           </button>
                         )}
                         <input
                           value={col.name}
@@ -532,6 +490,48 @@ export function TableNode({ id, data, selected }: { id: string, data: TableNodeD
 
       <Handle type="source" position={Position.Right} id="right" className="!w-4 !h-4 !bg-slate-400 border-2 border-white rounded-full z-10" />
       <Handle type="source" position={Position.Bottom} id="bottom" className="!w-4 !h-4 !bg-slate-400 border-2 border-white rounded-full z-10" />
+
+      {/* Date Picker Overlay - Positioned relative to node to avoid table clipping */}
+      {openDatePicker && (
+        <div 
+          ref={dropdownRef} 
+          className="absolute top-24 left-1/2 -translate-x-1/2 w-64 bg-white shadow-2xl border border-slate-200 rounded-xl z-[100] py-1 flex flex-col normal-case tracking-normal animate-in fade-in zoom-in-95 duration-200"
+        >
+          <div className="px-4 py-2 border-b border-slate-50 flex items-center justify-between">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Set Reporting Period</span>
+            <button onClick={() => setOpenDatePicker(null)} className="text-slate-300 hover:text-slate-500 transition-colors">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="p-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Start Date</label>
+              <input 
+                type="date" 
+                value={manualStart}
+                onChange={(e) => setManualStart(e.target.value)}
+                className="p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-slate-700 w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">End Date</label>
+              <input 
+                type="date" 
+                value={manualEnd}
+                onChange={(e) => setManualEnd(e.target.value)}
+                className="p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-slate-700 w-full"
+              />
+            </div>
+            <button
+              onClick={() => applyManualRange(openDatePicker)}
+              disabled={!manualStart || !manualEnd}
+              className="mt-1 w-full p-2.5 bg-indigo-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
+            >
+              Update Range
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
