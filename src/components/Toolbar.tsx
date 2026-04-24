@@ -99,7 +99,7 @@ export function Toolbar({
   };
 
   return (
-    <div className="absolute top-[2%] sm:top-6 left-1/2 -translate-x-1/2 z-10 bg-white/90 sm:bg-white/80 backdrop-blur-md shadow-xl rounded-[2rem] sm:rounded-full flex items-center p-2 sm:p-3 px-4 sm:px-12 border border-slate-200/50 gap-3 sm:gap-6 whitespace-nowrap max-w-[95vw] overflow-x-auto no-scrollbar pointer-events-auto">
+    <div className="absolute top-[2%] sm:top-6 left-1/2 -translate-x-1/2 z-10 bg-white/90 sm:bg-white/80 backdrop-blur-md shadow-xl rounded-[2rem] sm:rounded-full flex items-center p-2 sm:p-3 px-4 sm:px-12 border border-slate-200/50 gap-3 sm:gap-6 whitespace-nowrap max-w-[95vw] pointer-events-auto">
       {/* Journey Name */}
       <div className="flex items-center gap-3 mr-4">
         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200">
