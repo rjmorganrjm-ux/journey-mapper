@@ -138,6 +138,11 @@ function FlowApp() {
   const { fitView, screenToFlowPosition } = useReactFlow();
   
   const [contextMenu, setContextMenu] = useState<{ clientX: number, clientY: number } | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   const handleUndo = useCallback(() => {
     const prevState = undo(nodes, edges);
@@ -510,8 +515,8 @@ function FlowApp() {
         fitView
         minZoom={0.05}
         maxZoom={2}
-        panOnDrag={[1, 2]} // 1=middle, 2=right
-        selectionOnDrag={true} // Left-click drag to select
+        panOnDrag={isTouchDevice ? true : [1, 2]} // On mobile, any drag pans. On desktop, only right/mid.
+        selectionOnDrag={!isTouchDevice} // Disable drag-selection on mobile as it conflicts with panning
         selectionMode={SelectionMode.Partial} // Miro-style: select if box touches node
         onPaneContextMenu={(e) => {
           e.preventDefault();
