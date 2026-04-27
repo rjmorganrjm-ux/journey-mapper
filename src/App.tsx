@@ -136,8 +136,8 @@ function FlowApp() {
   
   const isRestoring = useRef(false);
   const { takeSnapshot, undo, redo, forceClear, canUndo, canRedo } = useHistory(nodes, edges);
-  const { fitView, screenToFlowPosition, zoomIn, zoomOut } = useReactFlow();
-  
+  const { fitView, screenToFlowPosition, getViewport, setViewport, zoomIn, zoomOut } = useReactFlow();
+
   const [contextMenu, setContextMenu] = useState<{ clientX: number, clientY: number } | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
@@ -165,17 +165,27 @@ function FlowApp() {
       e.preventDefault();
       e.stopImmediatePropagation();
 
-      if (e.deltaY > 0) {
-        zoomOut({ duration: 200 });
-      } else {
-        zoomIn({ duration: 200 });
-      }
+      const { x, y, zoom } = getViewport();
+      const delta = -e.deltaY;
+      const zoomSpeed = 0.0015; // Adjusted for a natural feeling
+      const factor = Math.exp(delta * zoomSpeed);
+      const nextZoom = Math.min(Math.max(zoom * factor, 0.05), 2);
+      
+      // Standard zoom-to-pointer logic
+      const rect = flowContainer.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      const nextX = mouseX - (mouseX - x) * (nextZoom / zoom);
+      const nextY = mouseY - (mouseY - y) * (nextZoom / zoom);
+
+      setViewport({ x: nextX, y: nextY, zoom: nextZoom }, { duration: 0 });
     };
 
     // Attach with capture to get ahead of React Flow's internal listeners
     flowContainer.addEventListener('wheel', handleWheel as any, { passive: false, capture: true });
     return () => flowContainer.removeEventListener('wheel', handleWheel as any, { capture: true });
-  }, [zoomIn, zoomOut]);
+  }, [zoomIn, zoomOut, getViewport, setViewport]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
