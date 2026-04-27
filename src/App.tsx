@@ -518,14 +518,14 @@ function FlowApp() {
   }, [handleDuplicate]);
 
   const handleBulkToggleCollapse = useCallback(() => {
-    const selectedNodes = nodes.filter(n => n.selected && n.type === 'table');
+    const selectedNodes = nodes.filter(n => n.selected && (n.type === 'table' || n.type === 'note'));
     if (selectedNodes.length === 0) return;
 
     // If any are expanded, collapse them all. If all are collapsed, expand them all.
     const anyExpanded = selectedNodes.some(n => !n.data.isCollapsed);
     
     setNodes(nds => nds.map(node => {
-      if (node.selected && node.type === 'table') {
+      if (node.selected && (node.type === 'table' || node.type === 'note')) {
         return {
           ...node,
           data: {
@@ -590,7 +590,7 @@ function FlowApp() {
         onExport={handleExport}
         isExporting={isExporting}
         onToggleCollapse={handleBulkToggleCollapse}
-        hasSelection={nodes.some(n => n.selected && n.type === 'table')}
+        hasSelection={nodes.some(n => n.selected && (n.type === 'table' || n.type === 'note'))}
       />
       <ReactFlow
         nodes={enrichedNodes}
