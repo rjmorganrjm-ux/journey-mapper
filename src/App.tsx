@@ -611,6 +611,7 @@ function FlowApp() {
         fitView
         minZoom={0.05}
         maxZoom={2}
+        panOnScroll={true}
         panOnDrag={isTouchDevice ? true : [1, 2]} // On mobile, any drag pans. On desktop, only right/mid.
         selectionOnDrag={!isTouchDevice} // Disable drag-selection on mobile as it conflicts with panning
         selectionMode={SelectionMode.Partial} // Miro-style: select if box touches node
