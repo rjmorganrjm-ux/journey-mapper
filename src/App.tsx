@@ -139,9 +139,29 @@ function FlowApp() {
   
   const [contextMenu, setContextMenu] = useState<{ clientX: number, clientY: number } | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
 
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable)) {
+        setIsSpacePressed(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setIsSpacePressed(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, []);
 
   const handleUndo = useCallback(() => {
@@ -611,9 +631,9 @@ function FlowApp() {
         fitView
         minZoom={0.05}
         maxZoom={2}
-        panOnScroll={true}
-        panOnDrag={isTouchDevice ? true : [1, 2]} // On mobile, any drag pans. On desktop, only right/mid.
-        selectionOnDrag={!isTouchDevice} // Disable drag-selection on mobile as it conflicts with panning
+        panOnScroll={false}
+        panOnDrag={isSpacePressed || isTouchDevice ? true : [1, 2]} // On mobile or Space held, any drag pans.
+        selectionOnDrag={!isSpacePressed && !isTouchDevice} // Disable selection when panning with Space
         selectionMode={SelectionMode.Partial} // Miro-style: select if box touches node
         onPaneContextMenu={(e) => {
           e.preventDefault();
