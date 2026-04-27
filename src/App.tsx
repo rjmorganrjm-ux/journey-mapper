@@ -14,6 +14,7 @@ import {
   getNodesBounds,
   useReactFlow,
   SelectionMode,
+  PanOnScrollMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { toPng, toSvg, toJpeg } from 'html-to-image';
@@ -135,7 +136,7 @@ function FlowApp() {
   
   const isRestoring = useRef(false);
   const { takeSnapshot, undo, redo, forceClear, canUndo, canRedo } = useHistory(nodes, edges);
-  const { fitView, screenToFlowPosition } = useReactFlow();
+  const { fitView, screenToFlowPosition, zoomIn, zoomOut } = useReactFlow();
   
   const [contextMenu, setContextMenu] = useState<{ clientX: number, clientY: number } | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -144,6 +145,37 @@ function FlowApp() {
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
   }, []);
+
+  // Hybrid Wheel Logic: Differentiate Mouse Wheel (Zoom) and Touchpad Swipe (Pan)
+  useEffect(() => {
+    const flowContainer = document.querySelector('.react-flow__pane');
+    if (!flowContainer) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // If meta/ctrl is held, it's a pinch-to-zoom or intentional zoom, let React Flow handle it
+      if (e.ctrlKey || e.metaKey) return;
+
+      // If it's a multi-axis scroll (touchpad) or has horizontal movement, let panOnScroll handle it
+      if (Math.abs(e.deltaX) > 0 || e.shiftKey) {
+        return; 
+      }
+
+      // If it's a pure vertical scroll (deltaX === 0), it's likely a mouse wheel
+      // We want this to ZOOM instead of PAN (even though panOnScroll is true)
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      if (e.deltaY > 0) {
+        zoomOut({ duration: 200 });
+      } else {
+        zoomIn({ duration: 200 });
+      }
+    };
+
+    // Attach with capture to get ahead of React Flow's internal listeners
+    flowContainer.addEventListener('wheel', handleWheel as any, { passive: false, capture: true });
+    return () => flowContainer.removeEventListener('wheel', handleWheel as any, { capture: true });
+  }, [zoomIn, zoomOut]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -631,7 +663,9 @@ function FlowApp() {
         fitView
         minZoom={0.05}
         maxZoom={2}
-        panOnScroll={false}
+        panOnScroll={true}
+        panOnScrollMode={PanOnScrollMode.Free}
+        zoomOnScroll={false} // Handled by our hybrid listener for mouse wheels
         panOnDrag={isSpacePressed || isTouchDevice ? true : [1, 2]} // On mobile or Space held, any drag pans.
         selectionOnDrag={!isSpacePressed && !isTouchDevice} // Disable selection when panning with Space
         selectionMode={SelectionMode.Partial} // Miro-style: select if box touches node
