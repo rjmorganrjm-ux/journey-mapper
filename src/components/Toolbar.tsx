@@ -118,83 +118,86 @@ export function Toolbar({
 
       <div className="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
 
-      {/* Add Step Dropdown */}
-      <div className="relative group/add">
-        <button
-          onClick={() => onAddNode('blank')}
-          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 hover:shadow-md text-white rounded-full text-xs sm:text-sm font-semibold transition-all group-hover/add:rounded-b-none"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Add Step</span>
-          <ChevronDown className="w-3 h-3 sm:ml-1" />
-        </button>
-         <div className="absolute top-[calc(100%-2px)] left-0 w-64 opacity-0 invisible group-hover/add:opacity-100 group-hover/add:visible transition-all z-20">
-            <AddStepMenu 
-              onAddNode={onAddNode} 
-              customTemplates={customTemplates} 
-              onDeleteTemplate={onDeleteTemplate}
-              className="rounded-tl-none border-t-0"
-            />
-         </div>
-      </div>
-
-      {/* Quick Links Dropdown */}
-      <div className="relative group/links">
-        <button
-          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 hover:bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm font-medium transition-all"
-        >
-          <Link className="w-4 h-4" />
-          <span className="hidden sm:inline">Quick Links</span>
-          <ChevronDown className="w-3 h-3 sm:ml-1" />
-        </button>
-        <div className="absolute top-full left-0 w-64 bg-white shadow-xl border border-slate-200 opacity-0 invisible group-hover/links:opacity-100 group-hover/links:visible transition-all flex flex-col overflow-hidden rounded-xl -mt-2 z-20 p-2 gap-2 whitespace-normal">
-          <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
-            {quickLinks.length === 0 && (
-              <div className="text-xs text-slate-400 text-center py-4 italic">No links added yet</div>
-            )}
-            {quickLinks.map((link, idx) => (
-              <div key={idx} className="flex items-center justify-between group/link-item hover:bg-slate-50 p-2 rounded-lg transition-colors">
-                <a 
-                  href={link.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-indigo-600 truncate flex-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  {link.label}
-                </a>
-                <button 
-                  onClick={() => onRemoveQuickLink(idx)}
-                  className="opacity-0 group-hover/link-item:opacity-100 p-1 hover:bg-rose-50 text-rose-500 rounded transition-all"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+      {/* Main Actions Group (Stay together on one line) */}
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Add Step Dropdown */}
+        <div className="relative group/add">
+          <button
+            onClick={() => onAddNode('blank')}
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 hover:shadow-md text-white rounded-full text-xs sm:text-sm font-semibold transition-all group-hover/add:rounded-b-none"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Step</span>
+            <ChevronDown className="w-3 h-3 sm:ml-1" />
+          </button>
+          <div className="absolute top-[calc(100%-2px)] left-0 w-64 opacity-0 invisible group-hover/add:opacity-100 group-hover/add:visible transition-all z-20">
+              <AddStepMenu 
+                onAddNode={onAddNode} 
+                customTemplates={customTemplates} 
+                onDeleteTemplate={onDeleteTemplate}
+                className="rounded-tl-none border-t-0"
+              />
           </div>
-          
-          <div className="border-t border-slate-100 pt-2 flex flex-col gap-2">
-            <input 
-              type="text" 
-              placeholder="Label (e.g. GA4)"
-              value={linkLabel}
-              onChange={(e) => setLinkLabel(e.target.value)}
-              className="text-xs p-2 bg-slate-50 border border-slate-200 rounded outline-none focus:border-indigo-300"
-            />
-            <input 
-              type="text" 
-              placeholder="URL"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              className="text-xs p-2 bg-slate-50 border border-slate-200 rounded outline-none focus:border-indigo-300"
-            />
-            <button 
-              onClick={handleAddLink}
-              disabled={!linkLabel || !linkUrl}
-              className="bg-indigo-600 text-white text-xs font-semibold py-2 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add Link
-            </button>
+        </div>
+
+        {/* Quick Links Dropdown */}
+        <div className="relative group/links">
+          <button
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 hover:bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm font-medium transition-all"
+          >
+            <Link className="w-4 h-4" />
+            <span className="hidden sm:inline">Quick Links</span>
+            <ChevronDown className="w-3 h-3 sm:ml-1" />
+          </button>
+          <div className="absolute top-full left-0 w-64 bg-white shadow-xl border border-slate-200 opacity-0 invisible group-hover/links:opacity-100 group-hover/links:visible transition-all flex flex-col overflow-hidden rounded-xl -mt-2 z-20 p-2 gap-2 whitespace-normal">
+            <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+              {quickLinks.length === 0 && (
+                <div className="text-xs text-slate-400 text-center py-4 italic">No links added yet</div>
+              )}
+              {quickLinks.map((link, idx) => (
+                <div key={idx} className="flex items-center justify-between group/link-item hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                  <a 
+                    href={link.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-indigo-600 truncate flex-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    {link.label}
+                  </a>
+                  <button 
+                    onClick={() => onRemoveQuickLink(idx)}
+                    className="opacity-0 group-hover/link-item:opacity-100 p-1 hover:bg-rose-50 text-rose-500 rounded transition-all"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            <div className="border-t border-slate-100 pt-2 flex flex-col gap-2">
+              <input 
+                type="text" 
+                placeholder="Label (e.g. GA4)"
+                value={linkLabel}
+                onChange={(e) => setLinkLabel(e.target.value)}
+                className="text-xs p-2 bg-slate-50 border border-slate-200 rounded outline-none focus:border-indigo-300"
+              />
+              <input 
+                type="text" 
+                placeholder="URL"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                className="text-xs p-2 bg-slate-50 border border-slate-200 rounded outline-none focus:border-indigo-300"
+              />
+              <button 
+                onClick={handleAddLink}
+                disabled={!linkLabel || !linkUrl}
+                className="bg-indigo-600 text-white text-xs font-semibold py-2 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Link
+              </button>
+            </div>
           </div>
         </div>
       </div>
